@@ -32,6 +32,9 @@ body {
   justify-content: space-between;
 }
 .brand { font-weight: 700; font-size: 1.05rem; letter-spacing: 0.02em; }
+.brand-grup { display: flex; align-items: center; gap: 10px; }
+.brand-grup .logo { height: 38px; width: auto; display: block; }
+.brand-alt { display: block; font-weight: 500; font-size: 0.72rem; opacity: 0.8; margin-top: 1px; }
 
 .wrap { max-width: 1100px; margin: 0 auto; padding: 24px 20px 60px; }
 

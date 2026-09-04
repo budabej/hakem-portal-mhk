@@ -156,6 +156,13 @@ async function karneGoster(hakemId, adSoyad) {
   el("detayDil").value = seciliHakem?.yabanci_dil || "";
   el("detayKaydetDurum").textContent = "";
 
+  el("detayIl").value = seciliHakem?.il || "";
+  el("detayTcKimlik").value = seciliHakem?.tc_kimlik || "";
+  el("detayTelefon").value = seciliHakem?.telefon || "";
+  el("detayIletisimEmail").value = seciliHakem?.iletisim_email || "";
+  el("detayAdres").value = seciliHakem?.adres || "";
+  el("detayKimlikKaydetDurum").textContent = "";
+
   await vizeAidatYukle(hakemId);
 
   const { data, error } = await sb
@@ -197,6 +204,27 @@ el("detayKaydetBtn").addEventListener("click", async () => {
     seciliHakem.yabanci_dil = yabanci_dil;
   }
   setTimeout(() => { el("detayKaydetDurum").textContent = ""; }, 2200);
+});
+
+el("detayKimlikKaydetBtn").addEventListener("click", async () => {
+  if (!seciliHakem) return;
+  const il = el("detayIl").value.trim() || null;
+  const tc_kimlik = el("detayTcKimlik").value.trim() || null;
+  const telefon = el("detayTelefon").value.trim() || null;
+  const iletisim_email = el("detayIletisimEmail").value.trim() || null;
+  const adres = el("detayAdres").value.trim() || null;
+  el("detayKimlikKaydetDurum").textContent = "Kaydediliyor…";
+
+  const { error } = await sb.from("hakemler").update({
+    il, tc_kimlik, telefon, iletisim_email, adres,
+  }).eq("id", seciliHakem.id);
+
+  el("detayKimlikKaydetDurum").textContent = error ? "Hata: " + error.message : "Kaydedildi ✓";
+  if (!error) {
+    Object.assign(seciliHakem, { il, tc_kimlik, telefon, iletisim_email, adres });
+    filtreliListeyiCiz();
+  }
+  setTimeout(() => { el("detayKimlikKaydetDurum").textContent = ""; }, 2200);
 });
 
 async function vizeAidatYukle(hakemId) {
@@ -390,13 +418,15 @@ el("gorevKaydetBtn").addEventListener("click", async () => {
 
 // ---- ARAMA / GİRİŞ / ÇIKIŞ ----
 
-el("arama").addEventListener("input", (e) => {
-  const q = e.target.value.trim().toLocaleUpperCase("tr-TR");
+function filtreliListeyiCiz() {
+  const q = el("arama").value.trim().toLocaleUpperCase("tr-TR");
   const filtreli = q
     ? tumHakemler.filter((h) => h.ad_soyad.toLocaleUpperCase("tr-TR").includes(q))
     : tumHakemler;
   tabloCiz(filtreli);
-});
+}
+
+el("arama").addEventListener("input", filtreliListeyiCiz);
 
 el("girisForm").addEventListener("submit", async (e) => {
   e.preventDefault();

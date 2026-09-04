@@ -74,6 +74,22 @@
       </div>
 
       <div class="detay-blok">
+        <h3>Kimlik ve iletişim bilgileri</h3>
+        <label for="detayIl">İl</label>
+        <input id="detayIl" type="text" placeholder="Örn: İZMİR">
+        <label for="detayTcKimlik">TC kimlik no</label>
+        <input id="detayTcKimlik" type="text" maxlength="11" placeholder="11 haneli TC kimlik no">
+        <label for="detayTelefon">Telefon</label>
+        <input id="detayTelefon" type="tel" placeholder="05xx xxx xx xx">
+        <label for="detayIletisimEmail">İletişim e-postası</label>
+        <input id="detayIletisimEmail" type="email" placeholder="ornek@eposta.com">
+        <label for="detayAdres">Adres</label>
+        <textarea id="detayAdres" rows="2" placeholder="Güncel adres"></textarea>
+        <button id="detayKimlikKaydetBtn" type="button" class="btn btn-secondary btn-mini">Kaydet</button>
+        <span id="detayKimlikKaydetDurum" class="muted"></span>
+      </div>
+
+      <div class="detay-blok">
         <h3>Eğitim ve yabancı dil</h3>
         <label for="detayEgitim">Eğitim</label>
         <input id="detayEgitim" type="text" placeholder="Örn: Lisans - Beden Eğitimi ve Spor">

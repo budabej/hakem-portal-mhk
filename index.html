@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MHK Paneli</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <span class="brand">MHK Paneli</span>
+    <button id="cikisBtn" class="btn btn-ghost" hidden>Çıkış yap</button>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <!-- GİRİŞ -->
+  <section id="girisEkrani" class="card card-narrow">
+    <h1>MHK girişi</h1>
+    <p class="muted">Bu panel sadece Merkez Hakem Kurulu üyeleri içindir.</p>
+    <form id="girisForm">
+      <label for="girisEmail">E-posta</label>
+      <input id="girisEmail" type="email" autocomplete="username" required>
+      <label for="girisSifre">Şifre</label>
+      <input id="girisSifre" type="password" autocomplete="current-password" required>
+      <button type="submit" class="btn btn-primary">Giriş yap</button>
+      <p id="girisHata" class="hata" hidden></p>
+    </form>
+  </section>
+
+  <!-- PANEL -->
+  <section id="panel" hidden>
+
+    <div class="card">
+      <div class="panel-ust">
+        <div>
+          <h1>Hakem listesi</h1>
+          <p class="muted"><span id="toplamSayi">0</span> hakem</p>
+        </div>
+        <input id="arama" type="search" placeholder="İsimle ara…" class="arama-kutu">
+      </div>
+
+      <div id="listeYukleniyor" class="muted">Yükleniyor…</div>
+
+      <div class="tablo-scroll">
+        <table id="hakemTablo" class="tablo" hidden>
+          <thead>
+            <tr>
+              <th>Sicil</th>
+              <th>Ad soyad</th>
+              <th>Kademe</th>
+              <th>İl</th>
+              <th>Kütük kaydı</th>
+              <th>Giriş e-postası</th>
+              <th>İletişim</th>
+              <th>Telefon</th>
+              <th>İlk giriş</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="hakemTbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div id="karneKart" class="card" hidden>
+      <div class="panel-ust">
+        <h2 id="karneBaslik"></h2>
+        <button id="karneKapat" class="btn btn-ghost">Kapat</button>
+      </div>
+      <div class="tablo-scroll">
+        <table class="tablo">
+          <thead>
+            <tr><th>Yarışma</th><th>Tarih</th><th>Yer</th><th>Kategori</th><th>Round</th><th>Puan</th></tr>
+          </thead>
+          <tbody id="karneTbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card muted-card">
+      <p class="muted">
+        Not: yeni hakem eklemek, giriş şifresi sıfırlamak veya bir hakemi silmek için
+        <code>scripts/import_to_supabase.py</code> script'ini ya da Supabase panelini kullanın.
+        Güvenlik nedeniyle bu işlemler tarayıcı üzerinden yapılamaz.
+      </p>
+    </div>
+
+  </section>
+
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="js/config.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>

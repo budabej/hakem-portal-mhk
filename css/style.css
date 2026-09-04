@@ -113,3 +113,49 @@ input:focus { outline: 2px solid var(--brand); outline-offset: 1px; }
 
 .rozet-uyari { color: var(--accent); font-weight: 600; }
 .rozet-ok { color: #067647; }
+
+/* v2: hakem detay, vize/aidat, yarisma-gorevlendirme */
+.detay-blok { margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--border); }
+.detay-blok h3 { font-size: 0.95rem; margin: 0 0 8px; }
+.detay-blok label { display: block; }
+.detay-blok input[type="text"] { width: 100%; max-width: 420px; margin-bottom: 4px; }
+
+.yil-liste { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+.yil-chip {
+  background: #eef0f3;
+  border-radius: 999px;
+  padding: 4px 6px 4px 12px;
+  font-size: 0.8rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.yil-chip .yil-sil {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  color: var(--danger);
+  font-weight: 700;
+  padding: 2px 6px;
+  font-size: 0.85rem;
+  line-height: 1;
+}
+.yil-ekle { display: flex; gap: 8px; align-items: center; }
+.yil-ekle input { width: 90px; padding: 6px 8px; }
+.yil-ekle .btn { margin-top: 0; }
+
+.yarisma-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  align-items: flex-end;
+  margin-top: 14px;
+}
+.yarisma-form > div { display: flex; flex-direction: column; }
+.yarisma-form label { margin-top: 0; }
+.yarisma-form input { min-width: 180px; }
+.yarisma-form .btn { margin-top: 0; height: 38px; }
+
+#yarismaSecici { padding: 8px 12px; border: 1px solid var(--border); border-radius: 8px; }
+#gorevKaydetBtn { margin-top: 14px; }
+#gorevKaydetDurum { margin-left: 10px; }

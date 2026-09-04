@@ -16,6 +16,11 @@ const goster = (id, evet) => { el(id).hidden = !evet; };
 const KADEMELER = ["ADAY", "İL", "ULUSAL", "ULUSLARARASI"];
 
 let tumHakemler = [];
+let seciliHakem = null;
+let tumYarismalar = [];
+let seciliGorevliler = new Set();
+let puanIstatistik = null;
+let gorevIstatistik = null;
 
 async function baslat() {
   const { data: { session } } = await sb.auth.getSession();
@@ -44,6 +49,7 @@ async function mhkMi() {
   }
   ekranGoster("panel");
   await listeYukle();
+  await yarismalarYukle();
 }
 
 async function listeYukle() {
@@ -137,10 +143,20 @@ el("hakemTbody").addEventListener("click", async (e) => {
   }
 });
 
+// ---- HAKEM DETAY (karne + egitim/dil + vize/aidat) ----
+
 async function karneGoster(hakemId, adSoyad) {
-  el("karneBaslik").textContent = `${adSoyad} — karne`;
+  seciliHakem = tumHakemler.find((h) => h.id === hakemId) || null;
+
+  el("karneBaslik").textContent = `${adSoyad} — detay`;
   goster("karneKart", true);
   el("karneKart").scrollIntoView({ behavior: "smooth", block: "start" });
+
+  el("detayEgitim").value = seciliHakem?.egitim || "";
+  el("detayDil").value = seciliHakem?.yabanci_dil || "";
+  el("detayKaydetDurum").textContent = "";
+
+  await vizeAidatYukle(hakemId);
 
   const { data, error } = await sb
     .from("hakem_puanlari")
@@ -165,7 +181,214 @@ async function karneGoster(hakemId, adSoyad) {
   `).join("");
 }
 
-el("karneKapat").addEventListener("click", () => goster("karneKart", false));
+el("karneKapat").addEventListener("click", () => { goster("karneKart", false); seciliHakem = null; });
+
+el("detayKaydetBtn").addEventListener("click", async () => {
+  if (!seciliHakem) return;
+  const egitim = el("detayEgitim").value.trim() || null;
+  const yabanci_dil = el("detayDil").value.trim() || null;
+  el("detayKaydetDurum").textContent = "Kaydediliyor…";
+
+  const { error } = await sb.from("hakemler").update({ egitim, yabanci_dil }).eq("id", seciliHakem.id);
+
+  el("detayKaydetDurum").textContent = error ? "Hata: " + error.message : "Kaydedildi ✓";
+  if (!error) {
+    seciliHakem.egitim = egitim;
+    seciliHakem.yabanci_dil = yabanci_dil;
+  }
+  setTimeout(() => { el("detayKaydetDurum").textContent = ""; }, 2200);
+});
+
+async function vizeAidatYukle(hakemId) {
+  const [{ data: vize }, { data: aidat }] = await Promise.all([
+    sb.from("hakem_vize_kayitlari").select("*").eq("hakem_id", hakemId).order("yil", { ascending: false }),
+    sb.from("hakem_aidat_kayitlari").select("*").eq("hakem_id", hakemId).order("yil", { ascending: false }),
+  ]);
+  yilListesiCiz("vizeListesi", vize || []);
+  yilListesiCiz("aidatListesi", aidat || []);
+}
+
+function yilListesiCiz(containerId, kayitlar) {
+  const kapsayici = el(containerId);
+  if (kayitlar.length === 0) {
+    kapsayici.innerHTML = `<span class="muted">Kayıt yok.</span>`;
+    return;
+  }
+  kapsayici.innerHTML = kayitlar.map((k) => `
+    <span class="yil-chip" data-id="${k.id}">
+      ${k.yil}
+      <button type="button" class="yil-sil" data-id="${k.id}" data-tablo="${containerId === "vizeListesi" ? "hakem_vize_kayitlari" : "hakem_aidat_kayitlari"}" title="Kaydı sil">✕</button>
+    </span>
+  `).join("");
+}
+
+async function yilEkle(tablo, alan, inputEl) {
+  if (!seciliHakem) return;
+  const yil = parseInt(inputEl.value, 10);
+  if (!yil || yil < 2000 || yil > 2100) { alert("Geçerli bir yıl girin."); return; }
+
+  const kayit = { hakem_id: seciliHakem.id, yil, [alan]: true };
+  const { error } = await sb.from(tablo).upsert(kayit, { onConflict: "hakem_id,yil" });
+  if (error) { alert("Kaydedilemedi: " + error.message); return; }
+
+  inputEl.value = "";
+  await vizeAidatYukle(seciliHakem.id);
+  puanIstatistik = null; gorevIstatistik = null; // istatistikler bir sonraki acilista tazelensin
+}
+
+el("vizeEkleBtn").addEventListener("click", () => yilEkle("hakem_vize_kayitlari", "katildi_mi", el("vizeYeniYil")));
+el("aidatEkleBtn").addEventListener("click", () => yilEkle("hakem_aidat_kayitlari", "odendi_mi", el("aidatYeniYil")));
+
+el("karneKart").addEventListener("click", async (e) => {
+  const silBtn = e.target.closest(".yil-sil");
+  if (silBtn && seciliHakem) {
+    const { error } = await sb.from(silBtn.dataset.tablo).delete().eq("id", silBtn.dataset.id);
+    if (!error) await vizeAidatYukle(seciliHakem.id);
+  }
+});
+
+// ---- YARIŞMA VE GÖREVLENDİRME ----
+
+async function yarismalarYukle() {
+  const { data } = await sb.from("yarismalar").select("*").order("tarih", { ascending: false });
+  tumYarismalar = data || [];
+  const sel = el("yarismaSecici");
+  sel.innerHTML = `<option value="">— seçin —</option>` + tumYarismalar.map((y) =>
+    `<option value="${y.id}">${kacir(y.ad)}${y.tarih ? " (" + y.tarih + ")" : ""}</option>`
+  ).join("");
+}
+
+el("yarismaForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const ad = el("yarismaAd").value.trim();
+  const tarih = el("yarismaTarih").value || null;
+  const yer = el("yarismaYer").value.trim() || null;
+  if (!ad) return;
+
+  const { data, error } = await sb.from("yarismalar").insert({ ad, tarih, yer }).select().single();
+  if (error) { alert("Oluşturulamadı: " + error.message); return; }
+
+  el("yarismaForm").reset();
+  await yarismalarYukle();
+  el("yarismaSecici").value = data.id;
+  await gorevPaneliYukle(data.id);
+});
+
+el("yarismaSecici").addEventListener("change", async (e) => {
+  const id = e.target.value;
+  if (!id) { goster("gorevTablo", false); goster("gorevKaydetBtn", false); return; }
+  await gorevPaneliYukle(id);
+});
+
+async function istatistikleriHazirla() {
+  if (puanIstatistik && gorevIstatistik) return;
+  const buYilNo = new Date().getFullYear();
+
+  const { data: puanlar } = await sb.from("hakem_puanlari").select("hakem_id, yarisma_adi, yarisma_tarihi");
+  puanIstatistik = new Map();
+  const gorulenler = new Set();
+  for (const p of (puanlar || [])) {
+    if (!p.yarisma_tarihi) continue;
+    const anahtar = p.hakem_id + "|" + p.yarisma_adi + "|" + p.yarisma_tarihi;
+    if (gorulenler.has(anahtar)) continue;
+    gorulenler.add(anahtar);
+    const kayit = puanIstatistik.get(p.hakem_id) || { buYil: 0, sonTarih: null };
+    const yil = parseInt(String(p.yarisma_tarihi).slice(0, 4), 10);
+    if (yil === buYilNo) kayit.buYil += 1;
+    if (!kayit.sonTarih || p.yarisma_tarihi > kayit.sonTarih) kayit.sonTarih = p.yarisma_tarihi;
+    puanIstatistik.set(p.hakem_id, kayit);
+  }
+
+  const { data: gorevler } = await sb.from("gorevlendirmeler").select("hakem_id, yarismalar(tarih)");
+  gorevIstatistik = new Map();
+  for (const g of (gorevler || [])) {
+    const tarih = g.yarismalar?.tarih;
+    if (!tarih) continue;
+    const kayit = gorevIstatistik.get(g.hakem_id) || { buYil: 0, sonTarih: null };
+    const yil = parseInt(String(tarih).slice(0, 4), 10);
+    if (yil === buYilNo) kayit.buYil += 1;
+    if (!kayit.sonTarih || tarih > kayit.sonTarih) kayit.sonTarih = tarih;
+    gorevIstatistik.set(g.hakem_id, kayit);
+  }
+}
+
+function hakemIstatistik(hakemId) {
+  const a = puanIstatistik?.get(hakemId) || { buYil: 0, sonTarih: null };
+  const b = gorevIstatistik?.get(hakemId) || { buYil: 0, sonTarih: null };
+  let sonTarih = a.sonTarih;
+  if (b.sonTarih && (!sonTarih || b.sonTarih > sonTarih)) sonTarih = b.sonTarih;
+  return { buYil: a.buYil + b.buYil, sonTarih };
+}
+
+async function gorevPaneliYukle(yarismaId) {
+  goster("gorevYukleniyor", true);
+  goster("gorevTablo", false);
+  goster("gorevKaydetBtn", false);
+
+  await istatistikleriHazirla();
+
+  const { data: mevcut } = await sb.from("gorevlendirmeler").select("hakem_id").eq("yarisma_id", yarismaId);
+  seciliGorevliler = new Set((mevcut || []).map((g) => g.hakem_id));
+
+  const tbody = el("gorevTbody");
+  tbody.innerHTML = tumHakemler.map((h) => {
+    const ist = hakemIstatistik(h.id);
+    const checked = seciliGorevliler.has(h.id) ? "checked" : "";
+    return `
+      <tr>
+        <td><input type="checkbox" class="gorev-check" data-id="${h.id}" ${checked}></td>
+        <td>${h.sicil_no}</td>
+        <td>${kacir(h.ad_soyad)}</td>
+        <td>${kacir(h.kademe)}</td>
+        <td>${ist.buYil}</td>
+        <td>${ist.sonTarih || "—"}</td>
+      </tr>
+    `;
+  }).join("");
+
+  goster("gorevYukleniyor", false);
+  goster("gorevTablo", true);
+  goster("gorevKaydetBtn", true);
+  el("gorevKaydetBtn").dataset.yarismaId = yarismaId;
+}
+
+el("gorevKaydetBtn").addEventListener("click", async () => {
+  const yarismaId = el("gorevKaydetBtn").dataset.yarismaId;
+  const btn = el("gorevKaydetBtn");
+  btn.disabled = true;
+  el("gorevKaydetDurum").textContent = "Kaydediliyor…";
+
+  const yeniSecili = new Set();
+  document.querySelectorAll(".gorev-check").forEach((c) => { if (c.checked) yeniSecili.add(c.dataset.id); });
+
+  const eklenecekler = [...yeniSecili].filter((id) => !seciliGorevliler.has(id));
+  const silinecekler = [...seciliGorevliler].filter((id) => !yeniSecili.has(id));
+
+  let hata = null;
+  if (eklenecekler.length > 0) {
+    const { error } = await sb.from("gorevlendirmeler").insert(
+      eklenecekler.map((hakem_id) => ({ yarisma_id: yarismaId, hakem_id }))
+    );
+    if (error) hata = error;
+  }
+  if (!hata && silinecekler.length > 0) {
+    const { error } = await sb.from("gorevlendirmeler")
+      .delete()
+      .eq("yarisma_id", yarismaId)
+      .in("hakem_id", silinecekler);
+    if (error) hata = error;
+  }
+
+  btn.disabled = false;
+  el("gorevKaydetDurum").textContent = hata ? "Hata: " + hata.message : "Kaydedildi ✓";
+  if (!hata) {
+    seciliGorevliler = yeniSecili;
+    puanIstatistik = null; gorevIstatistik = null;
+  }
+  setTimeout(() => { el("gorevKaydetDurum").textContent = ""; }, 2500);
+});
+
+// ---- ARAMA / GİRİŞ / ÇIKIŞ ----
 
 el("arama").addEventListener("input", (e) => {
   const q = e.target.value.trim().toLocaleUpperCase("tr-TR");

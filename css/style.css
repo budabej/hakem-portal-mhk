@@ -166,3 +166,80 @@ input:focus, textarea:focus { outline: 2px solid var(--brand); outline-offset: 1
 #yarismaSecici { padding: 8px 12px; border: 1px solid var(--border); border-radius: 8px; }
 #gorevKaydetBtn { margin-top: 14px; }
 #gorevKaydetDurum { margin-left: 10px; }
+
+/* v4: sekme (tab) navigasyonu, terfi/onay/istatistik/aktarim ekranlari */
+.sekme-cubugu {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 18px;
+}
+.sekme-btn {
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--ink);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+.sekme-btn.aktif { background: var(--brand); color: var(--brand-ink); border-color: var(--brand); }
+.rozet-sayi {
+  display: inline-block;
+  margin-left: 4px;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: var(--danger);
+  color: #fff;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.onay-karti {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.9rem;
+}
+.onay-karti:last-child { border-bottom: none; }
+.onay-karti .eski-deger { color: var(--muted); text-decoration: line-through; }
+.onay-karti .yeni-deger { color: var(--brand); font-weight: 700; }
+.onay-aksiyon { display: flex; gap: 8px; align-items: center; flex-shrink: 0; }
+.onay-aksiyon .btn { margin-top: 0; }
+
+.aktarim-satir { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 8px; }
+.aktarim-satir .btn { margin-top: 0; }
+.aktarim-satir input[type="file"] { padding: 6px; max-width: 280px; }
+
+#adayTablo select, #terfiTablo select { padding: 4px 6px; border-radius: 6px; border: 1px solid var(--border); }
+#adayTablo input[type="date"], #terfiTablo input[type="date"] { padding: 4px 6px; border-radius: 6px; border: 1px solid var(--border); }
+
+/* mobil uyum */
+@media (max-width: 640px) {
+  .wrap { padding: 14px 12px 40px; }
+  .card { padding: 16px 14px; }
+  .topbar-inner { flex-wrap: wrap; gap: 8px; padding: 10px 14px; }
+  .brand-grup .logo { height: 30px; }
+  .brand { font-size: 0.95rem; }
+  .brand-alt { font-size: 0.65rem; }
+  h1 { font-size: 1.1rem; }
+  .panel-ust { flex-direction: column; align-items: stretch; }
+  .arama-kutu { width: 100%; }
+  .sekme-cubugu { gap: 5px; }
+  .sekme-btn { padding: 7px 11px; font-size: 0.78rem; flex: 1 1 auto; text-align: center; }
+  .detay-blok input[type="text"],
+  .detay-blok input[type="tel"],
+  .detay-blok input[type="email"],
+  .detay-blok textarea { max-width: 100%; }
+  .yarisma-form { flex-direction: column; align-items: stretch; }
+  .yarisma-form input, .yarisma-form select { min-width: 0; width: 100%; }
+  .onay-karti { flex-direction: column; }
+  .aktarim-satir { flex-direction: column; align-items: stretch; }
+  .aktarim-satir input[type="file"] { max-width: 100%; }
+  .btn { width: 100%; }
+  .btn-mini, .onay-aksiyon .btn, .aktarim-satir .btn, .yil-ekle .btn, #gorevKaydetBtn { width: auto; }
+}

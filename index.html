@@ -40,148 +40,266 @@
   <!-- PANEL -->
   <section id="panel" hidden>
 
-    <div class="card">
-      <div class="panel-ust">
-        <div>
-          <h1>Hakem listesi</h1>
-          <p class="muted"><span id="toplamSayi">0</span> hakem</p>
+    <nav class="sekme-cubugu">
+      <button type="button" class="sekme-btn aktif" data-sekme="liste">Hakem Listesi</button>
+      <button type="button" class="sekme-btn" data-sekme="aday">Aday Hakemler</button>
+      <button type="button" class="sekme-btn" data-sekme="terfi">Terfi Yönetimi</button>
+      <button type="button" class="sekme-btn" data-sekme="yarisma">Yarışma &amp; Görevlendirme</button>
+      <button type="button" class="sekme-btn" data-sekme="onay">Bekleyen Onaylar <span id="onaySayisiRozet" class="rozet-sayi" hidden>0</span></button>
+      <button type="button" class="sekme-btn" data-sekme="istatistik">İstatistikler</button>
+      <button type="button" class="sekme-btn" data-sekme="aktarim">Toplu Aktarım</button>
+    </nav>
+
+    <!-- HAKEM LİSTESİ -->
+    <div data-sekme-icerik="liste">
+      <div class="card">
+        <div class="panel-ust">
+          <div>
+            <h1>Hakem listesi</h1>
+            <p class="muted"><span id="toplamSayi">0</span> hakem</p>
+          </div>
+          <input id="arama" type="search" placeholder="İsimle ara…" class="arama-kutu">
         </div>
-        <input id="arama" type="search" placeholder="İsimle ara…" class="arama-kutu">
+
+        <p class="muted">Kademe ve il değişiklikleri artık 3 farklı MHK üyesinin onayını gerektirir — "Kaydet" bir talep oluşturur, "Bekleyen Onaylar" sayfasından takip edilir.</p>
+
+        <div id="listeYukleniyor" class="muted">Yükleniyor…</div>
+
+        <div class="tablo-scroll">
+          <table id="hakemTablo" class="tablo" hidden>
+            <thead>
+              <tr>
+                <th>Sicil</th>
+                <th>Ad soyad</th>
+                <th>Kademe</th>
+                <th>İl</th>
+                <th>Kütük kaydı</th>
+                <th>Giriş e-postası</th>
+                <th>İletişim</th>
+                <th>Telefon</th>
+                <th>İlk giriş</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="hakemTbody"></tbody>
+          </table>
+        </div>
       </div>
 
-      <div id="listeYukleniyor" class="muted">Yükleniyor…</div>
+      <!-- HAKEM DETAY -->
+      <div id="karneKart" class="card" hidden>
+        <div class="panel-ust">
+          <h2 id="karneBaslik"></h2>
+          <button id="karneKapat" class="btn btn-ghost">Kapat</button>
+        </div>
 
-      <div class="tablo-scroll">
-        <table id="hakemTablo" class="tablo" hidden>
-          <thead>
-            <tr>
-              <th>Sicil</th>
-              <th>Ad soyad</th>
-              <th>Kademe</th>
-              <th>İl</th>
-              <th>Kütük kaydı</th>
-              <th>Giriş e-postası</th>
-              <th>İletişim</th>
-              <th>Telefon</th>
-              <th>İlk giriş</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody id="hakemTbody"></tbody>
-        </table>
+        <div class="detay-blok">
+          <h3>Kimlik ve iletişim bilgileri</h3>
+          <label for="detayIl">İl</label>
+          <input id="detayIl" type="text" placeholder="Örn: İZMİR">
+          <span class="muted">Zaten bir il kayıtlıysa değişiklik 3 MHK onayı gerektirir.</span>
+          <label for="detayTcKimlik">TC kimlik no</label>
+          <input id="detayTcKimlik" type="text" maxlength="11" placeholder="11 haneli TC kimlik no">
+          <label for="detayTelefon">Telefon</label>
+          <input id="detayTelefon" type="tel" placeholder="05xx xxx xx xx">
+          <label for="detayIletisimEmail">İletişim e-postası</label>
+          <input id="detayIletisimEmail" type="email" placeholder="ornek@eposta.com">
+          <label for="detayAdres">Adres</label>
+          <textarea id="detayAdres" rows="2" placeholder="Güncel adres"></textarea>
+          <button id="detayKimlikKaydetBtn" type="button" class="btn btn-secondary btn-mini">Kaydet</button>
+          <span id="detayKimlikKaydetDurum" class="muted"></span>
+        </div>
+
+        <div class="detay-blok">
+          <h3>Eğitim ve yabancı dil</h3>
+          <label for="detayEgitim">Eğitim</label>
+          <input id="detayEgitim" type="text" placeholder="Örn: Lisans - Beden Eğitimi ve Spor">
+          <label for="detayDil">Yabancı dil</label>
+          <input id="detayDil" type="text" placeholder="Örn: İngilizce - orta düzey">
+          <button id="detayKaydetBtn" type="button" class="btn btn-secondary btn-mini">Kaydet</button>
+          <span id="detayKaydetDurum" class="muted"></span>
+        </div>
+
+        <div class="detay-blok">
+          <h3>Vize semineri katılımı</h3>
+          <div id="vizeListesi" class="yil-liste"></div>
+          <div class="yil-ekle">
+            <input id="vizeYeniYil" type="number" placeholder="Yıl" min="2000" max="2100">
+            <button id="vizeEkleBtn" type="button" class="btn btn-secondary btn-mini">Yıl ekle</button>
+          </div>
+        </div>
+
+        <div class="detay-blok">
+          <h3>Aidat ödemesi</h3>
+          <div id="aidatListesi" class="yil-liste"></div>
+          <div class="yil-ekle">
+            <input id="aidatYeniYil" type="number" placeholder="Yıl" min="2000" max="2100">
+            <button id="aidatEkleBtn" type="button" class="btn btn-secondary btn-mini">Yıl ekle</button>
+          </div>
+        </div>
+
+        <div class="detay-blok">
+          <h3>Karne (puan geçmişi)</h3>
+          <div class="tablo-scroll">
+            <table class="tablo">
+              <thead>
+                <tr><th>Yarışma</th><th>Tarih</th><th>Yer</th><th>Kategori</th><th>Round</th><th>Puan</th></tr>
+              </thead>
+              <tbody id="karneTbody"></tbody>
+            </table>
+          </div>
+        </div>
       </div>
     </div>
 
-    <!-- HAKEM DETAY -->
-    <div id="karneKart" class="card" hidden>
-      <div class="panel-ust">
-        <h2 id="karneBaslik"></h2>
-        <button id="karneKapat" class="btn btn-ghost">Kapat</button>
-      </div>
-
-      <div class="detay-blok">
-        <h3>Kimlik ve iletişim bilgileri</h3>
-        <label for="detayIl">İl</label>
-        <input id="detayIl" type="text" placeholder="Örn: İZMİR">
-        <label for="detayTcKimlik">TC kimlik no</label>
-        <input id="detayTcKimlik" type="text" maxlength="11" placeholder="11 haneli TC kimlik no">
-        <label for="detayTelefon">Telefon</label>
-        <input id="detayTelefon" type="tel" placeholder="05xx xxx xx xx">
-        <label for="detayIletisimEmail">İletişim e-postası</label>
-        <input id="detayIletisimEmail" type="email" placeholder="ornek@eposta.com">
-        <label for="detayAdres">Adres</label>
-        <textarea id="detayAdres" rows="2" placeholder="Güncel adres"></textarea>
-        <button id="detayKimlikKaydetBtn" type="button" class="btn btn-secondary btn-mini">Kaydet</button>
-        <span id="detayKimlikKaydetDurum" class="muted"></span>
-      </div>
-
-      <div class="detay-blok">
-        <h3>Eğitim ve yabancı dil</h3>
-        <label for="detayEgitim">Eğitim</label>
-        <input id="detayEgitim" type="text" placeholder="Örn: Lisans - Beden Eğitimi ve Spor">
-        <label for="detayDil">Yabancı dil</label>
-        <input id="detayDil" type="text" placeholder="Örn: İngilizce - orta düzey">
-        <button id="detayKaydetBtn" type="button" class="btn btn-secondary btn-mini">Kaydet</button>
-        <span id="detayKaydetDurum" class="muted"></span>
-      </div>
-
-      <div class="detay-blok">
-        <h3>Vize semineri katılımı</h3>
-        <div id="vizeListesi" class="yil-liste"></div>
-        <div class="yil-ekle">
-          <input id="vizeYeniYil" type="number" placeholder="Yıl" min="2000" max="2100">
-          <button id="vizeEkleBtn" type="button" class="btn btn-secondary btn-mini">Yıl ekle</button>
-        </div>
-      </div>
-
-      <div class="detay-blok">
-        <h3>Aidat ödemesi</h3>
-        <div id="aidatListesi" class="yil-liste"></div>
-        <div class="yil-ekle">
-          <input id="aidatYeniYil" type="number" placeholder="Yıl" min="2000" max="2100">
-          <button id="aidatEkleBtn" type="button" class="btn btn-secondary btn-mini">Yıl ekle</button>
-        </div>
-      </div>
-
-      <div class="detay-blok">
-        <h3>Karne (puan geçmişi)</h3>
+    <!-- ADAY HAKEMLER -->
+    <div data-sekme-icerik="aday" hidden>
+      <div class="card">
+        <h1>Aday Hakemler</h1>
+        <p class="muted">Sadece "ADAY" kademesindeki hakemler listelenir. Yeni kademe seçip "Talep oluştur" ile terfi başlatın — 3 farklı MHK üyesi onayladığında uygulanır.</p>
         <div class="tablo-scroll">
-          <table class="tablo">
-            <thead>
-              <tr><th>Yarışma</th><th>Tarih</th><th>Yer</th><th>Kategori</th><th>Round</th><th>Puan</th></tr>
-            </thead>
-            <tbody id="karneTbody"></tbody>
+          <table id="adayTablo" class="tablo">
+            <thead><tr><th>Sicil</th><th>Ad soyad</th><th>İl</th><th>Yeni kademe</th><th>Terfi tarihi</th><th></th></tr></thead>
+            <tbody id="adayTbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- TERFİ YÖNETİMİ -->
+    <div data-sekme-icerik="terfi" hidden>
+      <div class="card">
+        <h1>Terfi Yönetimi</h1>
+        <p class="muted">Tüm hakemler için kademe değişikliği (terfi/tenzil) talebi oluşturun. Her talep 3 farklı MHK üyesinin onayından sonra uygulanır ve ilgili terfi tarihi otomatik kaydedilir.</p>
+        <div class="tablo-scroll">
+          <table id="terfiTablo" class="tablo">
+            <thead><tr><th>Sicil</th><th>Ad soyad</th><th>Mevcut kademe</th><th>Yeni kademe</th><th>Terfi tarihi</th><th></th></tr></thead>
+            <tbody id="terfiTbody"></tbody>
           </table>
         </div>
       </div>
     </div>
 
     <!-- YARIŞMA VE GÖREVLENDİRME -->
-    <div class="card">
-      <h1>Yarışma ve görevlendirme</h1>
-      <p class="muted">Yeni yarışma oluşturun ve görevlendirilecek hakemleri seçin.</p>
+    <div data-sekme-icerik="yarisma" hidden>
+      <div class="card">
+        <h1>Yarışma ve görevlendirme</h1>
+        <p class="muted">Yeni yarışma oluşturun ve görevlendirilecek hakemleri seçin.</p>
 
-      <form id="yarismaForm" class="yarisma-form">
-        <div>
-          <label for="yarismaAd">Yarışma adı</label>
-          <input id="yarismaAd" type="text" required>
-        </div>
-        <div>
-          <label for="yarismaTarih">Tarih</label>
-          <input id="yarismaTarih" type="date">
-        </div>
-        <div>
-          <label for="yarismaYer">Yer</label>
-          <input id="yarismaYer" type="text">
-        </div>
-        <button type="submit" class="btn btn-primary">Yarışma oluştur</button>
-      </form>
+        <form id="yarismaForm" class="yarisma-form">
+          <div>
+            <label for="yarismaAd">Yarışma adı</label>
+            <input id="yarismaAd" type="text" required>
+          </div>
+          <div>
+            <label for="yarismaTarih">Tarih</label>
+            <input id="yarismaTarih" type="date">
+          </div>
+          <div>
+            <label for="yarismaYer">Yer</label>
+            <input id="yarismaYer" type="text">
+          </div>
+          <button type="submit" class="btn btn-primary">Yarışma oluştur</button>
+        </form>
 
-      <div class="panel-ust" style="margin-top:20px;">
-        <label for="yarismaSecici" style="margin:0;">Yarışma seç:</label>
-        <select id="yarismaSecici"><option value="">— seçin —</option></select>
+        <div class="panel-ust" style="margin-top:20px;">
+          <label for="yarismaSecici" style="margin:0;">Yarışma seç:</label>
+          <select id="yarismaSecici"><option value="">— seçin —</option></select>
+        </div>
+
+        <div id="gorevYukleniyor" class="muted" hidden>Yükleniyor…</div>
+
+        <div class="tablo-scroll">
+          <table id="gorevTablo" class="tablo" hidden>
+            <thead>
+              <tr><th>Görevli</th><th>Sicil</th><th>Ad soyad</th><th>Kademe</th><th>Bu yıl görev</th><th>Son görev</th></tr>
+            </thead>
+            <tbody id="gorevTbody"></tbody>
+          </table>
+        </div>
+
+        <button id="gorevKaydetBtn" type="button" class="btn btn-secondary" hidden>Görevlendirmeleri kaydet</button>
+        <span id="gorevKaydetDurum" class="muted"></span>
       </div>
+    </div>
 
-      <div id="gorevYukleniyor" class="muted" hidden>Yükleniyor…</div>
-
-      <div class="tablo-scroll">
-        <table id="gorevTablo" class="tablo" hidden>
-          <thead>
-            <tr><th>Görevli</th><th>Sicil</th><th>Ad soyad</th><th>Kademe</th><th>Bu yıl görev</th><th>Son görev</th></tr>
-          </thead>
-          <tbody id="gorevTbody"></tbody>
-        </table>
+    <!-- BEKLEYEN ONAYLAR -->
+    <div data-sekme-icerik="onay" hidden>
+      <div class="card">
+        <h1>Bekleyen Onaylar</h1>
+        <p class="muted">Kademe ve il değişiklik talepleri, 3 farklı MHK üyesi onayladığında otomatik uygulanır. Kendi oluşturduğunuz talep otomatik olarak 1 onay sayılır.</p>
+        <div id="onayYukleniyor" class="muted">Yükleniyor…</div>
+        <div id="onayListesi"></div>
       </div>
+    </div>
 
-      <button id="gorevKaydetBtn" type="button" class="btn btn-secondary" hidden>Görevlendirmeleri kaydet</button>
-      <span id="gorevKaydetDurum" class="muted"></span>
+    <!-- İSTATİSTİKLER -->
+    <div data-sekme-icerik="istatistik" hidden>
+      <div class="card">
+        <h1>İstatistikler</h1>
+        <p class="muted">Hakemlerin seçilen yıldaki görev sayısı ve ortalama puanı (mevcut yarışma karnelerine göre).</p>
+        <div class="panel-ust">
+          <label for="istatistikYil" style="margin:0;">Yıl:</label>
+          <select id="istatistikYil"></select>
+        </div>
+        <div id="istatistikYukleniyor" class="muted">Yükleniyor…</div>
+        <div class="tablo-scroll">
+          <table id="istatistikTablo" class="tablo" hidden>
+            <thead><tr><th>Sicil</th><th>Ad soyad</th><th>Görev sayısı</th><th>Ortalama puan</th></tr></thead>
+            <tbody id="istatistikTbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- TOPLU İÇE/DIŞA AKTARIM -->
+    <div data-sekme-icerik="aktarim" hidden>
+      <div class="card">
+        <h1>Toplu İçe/Dışa Aktarım</h1>
+        <p class="muted">Veriler sisteme tam işlenene kadar, Excel dosyalarıyla toplu güncelleme/dışa aktarma yapabilirsiniz.</p>
+
+        <div class="detay-blok">
+          <h3>Hakem bilgileri</h3>
+          <p class="muted">
+            İlk satır başlık olmalı: <code>sicil_no</code> zorunlu; <code>il, telefon, iletisim_email, adres, tc_kimlik, egitim, yabanci_dil, kutuk_kaydi_var_mi</code>
+            sütunlarından istediklerinizi doldurun (boş bırakılanlar değiştirilmez). Zaten bir ili olan hakemin ilini değiştirmek 3 MHK onayı gerektirir.
+            <strong>Kademe bu dosyayla değiştirilemez</strong> — "Terfi Yönetimi" sayfasını kullanın.
+          </p>
+          <div class="aktarim-satir">
+            <button id="hakemSablonBtn" type="button" class="btn btn-ghost btn-mini">Şablon indir</button>
+            <button id="hakemDisaAktarBtn" type="button" class="btn btn-secondary btn-mini">Mevcut verileri dışa aktar</button>
+          </div>
+          <div class="aktarim-satir">
+            <input id="hakemIceAktarDosya" type="file" accept=".xlsx,.xls,.csv">
+            <button id="hakemIceAktarBtn" type="button" class="btn btn-primary btn-mini">İçe aktar</button>
+          </div>
+          <div id="hakemAktarimDurum" class="muted"></div>
+        </div>
+
+        <div class="detay-blok">
+          <h3>Yarışma puanları (karne)</h3>
+          <p class="muted">
+            Sütunlar: <code>sicil_no, yarisma_adi, yarisma_tarihi (YYYY-AA-GG), yarisma_yeri, kategori_adi, round, puan, kategori_qty</code>.
+            Aynı kayıt (hakem + yarışma + kategori + round + puan) tekrar yüklenirse atlanır, mükerrer eklenmez.
+          </p>
+          <div class="aktarim-satir">
+            <button id="puanSablonBtn" type="button" class="btn btn-ghost btn-mini">Şablon indir</button>
+            <button id="puanDisaAktarBtn" type="button" class="btn btn-secondary btn-mini">Mevcut verileri dışa aktar</button>
+          </div>
+          <div class="aktarim-satir">
+            <input id="puanIceAktarDosya" type="file" accept=".xlsx,.xls,.csv">
+            <button id="puanIceAktarBtn" type="button" class="btn btn-primary btn-mini">İçe aktar</button>
+          </div>
+          <div id="puanAktarimDurum" class="muted"></div>
+        </div>
+      </div>
     </div>
 
     <div class="card muted-card">
       <p class="muted">
-        Not: yeni hakem eklemek, giriş şifresi sıfırlamak veya bir hakemi silmek için
-        <code>scripts/import_to_supabase.py</code> script'ini ya da Supabase panelini kullanın.
-        Güvenlik nedeniyle bu işlemler tarayıcı üzerinden yapılamaz.
+        Not: yeni hakem eklemek, giriş şifresi sıfırlamak, bir hakemi silmek veya yeni bir MHK üyesi atamak için
+        <code>scripts/import_to_supabase.py</code> / <code>scripts/create_mhk_user.py</code> script'lerini ya da Supabase panelini kullanın.
+        Güvenlik nedeniyle bu işlemler tarayıcı üzerinden yapılamaz — hiçbir hakem kendi şifresiyle bu panele giriş yapamaz.
       </p>
     </div>
 
@@ -190,6 +308,7 @@
 </main>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="js/config.js"></script>
 <script src="js/app.js"></script>
 </body>
